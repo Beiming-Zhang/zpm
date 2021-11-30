@@ -241,7 +241,6 @@ ClassMethod LoadModuleReference(pServerName As %String, pModuleName As %String, 
 		} Else {
 			Merge qstruct = pParams("qstruct")
 		}
-		
 		// Use % variables that intentionally leak in worker processes, to avoid duplicate work when they go out of scope.
 		#dim %installcontext As %ZPM.PackageManager.Core.InstallContext
 		#dim %manager As %ZPM.PackageManager.Client.Manager
@@ -257,7 +256,6 @@ ClassMethod LoadModuleReference(pServerName As %String, pModuleName As %String, 
 		
 		Set %manager = $Select($IsObject($Get(%manager)):%manager,1:##class(%ZPM.PackageManager.Client.Manager).%Get(.tSC))
 		$$$ThrowOnError(tSC)
-		
 		Set tClient = %manager.CheckServiceCache(pServerName,.tAvailable)
 		If 'tAvailable {
 			Set tSC = $$$ERROR($$$GeneralError,$$$FormatText("Repository '%1' is unavailable.",pServerName))
@@ -266,7 +264,6 @@ ClassMethod LoadModuleReference(pServerName As %String, pModuleName As %String, 
 		Set tModRef = ##class(%ZPM.PackageManager.Core.ResolvedModuleReference).%New()
 		Set tModRef.Name = pModuleName
 		Set tModRef.VersionString = pVersion
-		
 		// Make sure we're not downgrading.
 		If '$Get(pParams("PermitDowngrade")) {
 			If ##class(%ZPM.PackageManager.Developer.Module).NameExists(pModuleName) {
@@ -281,7 +278,6 @@ ClassMethod LoadModuleReference(pServerName As %String, pModuleName As %String, 
 				}
 			}
 		}
-		
 		// Ensure requested versions match those required by other modules in the namespace, excluding versions currently being installed
 		// (the requirements of such modules are already known to be satisfied)
 		Set tSC = ..GetRequiredVersionExpression(pModuleName,%installcontext.GetPendingModuleList(),.tExpression,.tSourceList)
@@ -294,7 +290,6 @@ ClassMethod LoadModuleReference(pServerName As %String, pModuleName As %String, 
 			Set tSC = $$$ERROR($$$GeneralError,$$$FormatText("Requested version (%1 %2) does not satisfy the requirements of other modules installed in the current namespace (%3).",tModRef.Name,pVersion,tSourceString))
 			Quit
 		}
-		
 		If tClient.Supports("GetModuleDirectory") {
 			Set tDirectory = tClient.GetModuleDirectory(tModRef)
 			Set tDeveloperMode = 0
@@ -319,7 +314,6 @@ ClassMethod LoadModuleReference(pServerName As %String, pModuleName As %String, 
 			If ($ISOBJECT(tPayload)) && (tPayload.%IsA("%Stream.FileBinary") ) {
 				Set tFileName = tPayload.Filename
 			}
-			
 			If tAsArchive<0 {
 				// Read the file header
 				Set tHeader = tPayload.Read(2,.tSC)
@@ -850,7 +844,6 @@ ClassMethod GetModuleListExecute(ByRef qHandle As %Binary, pServer As %String) A
 		If $$$ISERR(tSC) {
 			Quit
 		}
-		
 		Set tClient = tServer.GetPackageService()
 		If tClient.IsAvailable() {
 			Set tSearchCriteria = ##class(%ZPM.PackageManager.Core.SearchCriteria).%New()
@@ -909,7 +902,6 @@ ClassMethod LoadNewModule(pDirectory As %String, ByRef pParams, pRepository As %
 		If '$Data(pParams("qstruct")) {
 			Set qstruct = "ck"_$Select(tVerbose:"d",1:"-d")
 		}
-		
 		// Check for valid license key prior to top-level module load
 		// This may throw an exception.
 		If '$Data($$$ZPMHandledModules($Namespace)) {
@@ -918,7 +910,6 @@ ClassMethod LoadNewModule(pDirectory As %String, ByRef pParams, pRepository As %
 				Write !,"WARNING: Continuing module load without a valid license."
 			}
 		}
-		
 		// Create a singleton instance for logging of warnings/error messages
 		Set tLogManager = ##class(%ZPM.PackageManager.Core.LogManager).%Get(.tSC)
 		$$$ThrowOnError(tSC)
@@ -928,7 +919,6 @@ ClassMethod LoadNewModule(pDirectory As %String, ByRef pParams, pRepository As %
 		If (tLogManager.Threshold > tMinLogLevel) {
 			Set tLogManager.Threshold = tMinLogLevel
 		}
-		
 		Set pDirectory = ##class(%File).NormalizeDirectory("",pDirectory)
 		
 		If ($Get(pParams("NoJournal"),0) '= 0) {
@@ -941,17 +931,16 @@ ClassMethod LoadNewModule(pDirectory As %String, ByRef pParams, pRepository As %
 		$$$ThrowOnError(tSC)
 		
 		Set tFirstLoaded = $$$lcase($Order(tLoadedList("")))
-    
+
 		If (tFirstLoaded = "") {
 			$$$ThrowStatus($$$ERROR($$$GeneralError,"No module definition found."))
 		}
 		If ($Order(tLoadedList(tFirstLoaded)) '= "") {
 			$$$ThrowStatus($$$ERROR($$$GeneralError,"module.xml contains multiple documents."))
 		}
-		If ($Piece(tFirstLoaded,".",*) '= "zpm") {
+		If ($Piece(tFirstLoaded,".",*) '= "module") {
 			$$$ThrowStatus($$$ERROR($$$GeneralError,"No module definition found."))
 		}
-		
 		Set tModuleName = $Piece(tFirstLoaded,".",1,*-1)
 		
 		If (pRepository '= "") {
@@ -966,7 +955,6 @@ ClassMethod LoadNewModule(pDirectory As %String, ByRef pParams, pRepository As %
 				}
 			}
 		}
-		
 		// If we have specified developer mode, but do not have a source control extension enabled, then set up a reasonable default.
 		If $Get(pParams("DeveloperMode"),0) {
 			Set tCurrentSourceControl = ##class(%Studio.SourceControl.Interface).SourceControlClassGet()
@@ -1803,4 +1791,3 @@ ClassMethod GetFileLines(pFileName As %String, Output pOutput) As %Status [ Inte
 }
 
 }
-

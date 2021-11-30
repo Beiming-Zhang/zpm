@@ -398,7 +398,7 @@ Method %Reload(ByRef pParams) As %Status
 			Quit
 		}
 		set first = $$$lcase(first)
-    If ($Piece(first,".",*) '= "zpm") {
+    If ($$$ucase($Piece(first,".",*)) '= "MODULE") {
 			Set tSC = $$$ERROR($$$GeneralError,"No module definition found.")
 			Quit
 		}
@@ -746,7 +746,7 @@ Method %Export(ByRef pParams, ByRef pTargetDirectory As %String, Output pDepende
 				
 				Set tExt = $Piece(tFullResourceName,".",*)
 				Set tName = $Piece(tFullResourceName,".",1,*-1)
-				If ($$$ucase(tExt) = "ZPM") {
+				If ($$$ucase(tExt) = "MODULE") {
 					If (tName '= ..Module.Name) {
 						Set pDependencyGraph(tName,"Location") = ".modules/"_tName_"/"
 					}
@@ -774,7 +774,7 @@ Method %Export(ByRef pParams, ByRef pTargetDirectory As %String, Output pDepende
 				Set tRelativePath = "preload/"_tRelativePath
 			}
 			
-			If (tExt = "ZPM") && (tName '= ..Module.Name) {
+			If ($$$ucase(tExt) = "MODULE") && (tName '= ..Module.Name) {
 				Set tRelativePath = pDependencyGraph(tName,"Location")_tRelativePath
 			} ElseIf (tSrcModule '= "") && (tSrcModule '= ..Module.Name) {
 				Set tRelativePath = pDependencyGraph(tSrcModule,"Location")_tRelativePath
