@@ -1,4 +1,3 @@
-/// Description
 Class %ZPM.PackageManager.Developer.Extension.CompositeMethodOverrides
 {
 
@@ -28,6 +27,38 @@ Property ResourceMappingCache As %ZPM.PackageManager.Developer.Extension.Resourc
 Parameter PRIMARYEXTENSIONGBL = {"^SYS(""SourceControl"",""%ZPM.PackageManager.Developer.Extension.Composite"",""PrimaryExtensionClass"")"};
 
 Parameter SUBEXTENSIONGBL = {"^SYS(""SourceControl"",""%ZPM.PackageManager.Developer.Extension.Composite"",""SubExtensionClasses"")"};
+
+/// This just calls the <method>Login</method> to perform an initialisation.
+/// Note that this is called by Studio automatically via the <class>%Studio.SourceControl.Interface</class>
+/// class, do not call %New directly.
+Method %OnNew(initval As %String) As %Status [ Final ]
+{
+	Set tStatus = $$$OK
+	Try {
+		Set ..Username=$listget(initval)
+		Set ..MainJob=$listget(initval,3),..StudioVersion=$listget(initval,4)
+		Set tClasses = ..GetSubExtensionClasses()
+		Set tPtr = 0
+		While $ListNext(tClasses,tPtr,tClassName) {
+			Set tExt = $ClassMethod(tClassName,"%New",initval)
+			If '$IsObject(tExt) {
+				Set tStatus = $Get(%objlasterror,$$$ERROR($$$GeneralError,"Could not create new extension object of type "_tClassName))
+				Quit
+			}
+			Set tStatus = ..SubExtensions.SetAt(tExt,tClassName)
+			If $$$ISERR(tStatus) {
+				Quit
+			}
+			Set tStatus = ..MapMenus(tClassName)
+			If $$$ISERR(tStatus) {
+				Quit
+			}
+		}
+	} Catch e {
+		Set tStatus = e.AsStatus()
+	}
+	Quit tStatus
+}
 
 ClassMethod SetExtensionClasses(pPrimaryClassName As %String, pSubExtensionClassNames As %List) As %Status
 {
@@ -135,6 +166,93 @@ Method GetPrimaryExtension(pInternalName As %String = "") As %Studio.Extension.B
 Method GetSubExtension(pClassName As %String) As %Studio.Extension.Base
 {
 	Quit ..SubExtensions.GetAt(pClassName)
+}
+
+Method GetMenuExtension(pMenuID As %String, pInternalName As %String = "") As %Studio.Extension.Base
+{
+	Set tSettings = ##class(%ZPM.PackageManager.Developer.Extension.UniversalSettings).%Get(.tSC)
+	If $$$ISOK(tSC) && tSettings.MappedSourceControl {
+		Set tCache = ##class(%ZPM.PackageManager.Developer.Extension.ResourceMappingCache).%Get()
+		If (pInternalName '= "") && ($Length(pInternalName,",") = 1) {
+			Set tSourceNamespace = ..FindNamespaceForInternalName(pInternalName)
+			If (tSourceNamespace '= ..Namespace) {
+				Set tMenuName = $Piece(pMenuID,",")
+				Try {
+					Set $Namespace = tSourceNamespace
+					If '$Data(tCache.MenuMap(tSourceNamespace,tMenuName),tPresent) {
+						Set tOtherNSExtension = ..GetCurrentNamespaceExtension()
+						Set tCache.MenuMap(tSourceNamespace,tMenuName) = 0
+						
+						// If tOtherNSExtension defines the menu item in question...
+						Set tCheckItemResult = $Method(tOtherNSExtension,"MainMenusFunc",$ClassName(tOtherNSExtension))
+						If (tCheckItemResult.%SQLCODE < 0) {
+							Throw ##class(%Exception.SQL).CreateFromSQLCODE(tCheckItemResult.%SQLCODe,tCheckItemResult.%Message)
+						}
+						While tCheckItemResult.%Next(.tSC) {
+							$$$ThrowOnError(tSC)
+							If (tCheckItemResult.%Get("Name") = tMenuName) {
+								Set tCache.MenuMap(tSourceNamespace,tMenuName) = 1
+							}
+						}
+						$$$ThrowOnError(tSC)
+					} ElseIf (tPresent) {
+						// Intentionally stays in tSourceNamespace
+						Return ..GetCurrentNamespaceExtension()
+					}
+				} Catch e {
+					Set tSC = e.AsStatus()
+					Write !,"Error checking Studio extension menu item in ",tSourceNamespace,": ",$System.Status.GetErrorText(tSC)
+				}
+				Set $Namespace = ..Namespace
+			}
+		}
+	}
+	Quit ..GetSubExtension(..MenuMap.GetAt($Piece(pMenuID,",")))
+}
+
+Method MapMenus(pSourceClass As %String) As %Status [ Private ]
+{
+	Set tStatus = $$$OK
+	Try {
+		Set tStmt = ##class(%SQL.Statement).%New()
+		Set tStatus = tStmt.%PrepareClassQuery(pSourceClass,"MainMenus")
+		If $$$ISERR(tStatus) {
+			Quit
+		}
+		Set tResult = tStmt.%Execute(pSourceClass)
+		If (tResult.%SQLCODE < 0) {
+			Set tStatus = $$$ERROR($$$SQLCode,tResult.%SQLCODE,tResult.%Message)
+			Quit
+		}
+		While tResult.%Next(.tStatus) {
+			Set tStatus = ..MenuMap.SetAt(pSourceClass,tResult.%Get("Name"))
+		}
+		If $$$ISERR(tStatus) {
+			Quit
+		}
+	} Catch e {
+		Set tStatus = e.AsStatus()
+	}
+	Quit tStatus
+}
+
+Method ForEachExtension(pMethodName As %String, pArgs...) As %Status
+{
+	Set tStatus = $$$OK
+	Try {
+		Set tKey = ""
+		For {
+			Set tExt = ..SubExtensions.GetNext(.tKey)
+			If (tKey = "") {
+				Quit
+			}
+			Set tOneSC = $Method(tExt,pMethodName,pArgs...)
+			Set tStatus = $$$ADDSC(tStatus,tOneSC)
+		}
+	} Catch e {
+		Set tSC = e.AsStatus()
+	}
+	Quit tStatus
 }
 
 ClassMethod GetCurrentNamespaceExtension() As %Studio.Extension.Base

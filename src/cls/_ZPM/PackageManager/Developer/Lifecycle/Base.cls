@@ -477,10 +477,10 @@ Method %Reload(ByRef pParams) As %Status
 			
 			If $IsObject(tResource.Processor) {
 				Set tSC = $$$ADDSC(tSC,tResource.Processor.OnPhase("Reload",.pParams))
+				If $$$ISERR(tSC) {
+					Quit
+				}
 			}
-		}
-		If $$$ISERR(tSC) {
-			Quit
 		}
 		
 		// call %OnModifyResources to let the source control class do any other mapping it needs to
