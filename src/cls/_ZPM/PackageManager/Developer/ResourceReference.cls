@@ -366,7 +366,9 @@ ClassMethod GetStatus(InternalName As %String, Output pReferenced As %Boolean, O
 	Set pMessage = ""
 	Try {
 		// Special case: module itself
-		If ($Piece(InternalName,".",*) = "MODULE") {
+		Set tModuleExt = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)
+		Set tZPMExt = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,)
+		If (($Piece(InternalName,".",*) = tModuleExt) || ($Piece(InternalName,".",*) = tZPMExt)) {
 			Set tName = $Piece(InternalName,".",1,*-1)
 			If ##class(%ZPM.PackageManager.Developer.Module).NameExists(tName) {
 				Set tModule = ##class(%ZPM.PackageManager.Developer.Module).NameOpen(tName,,.tSC)

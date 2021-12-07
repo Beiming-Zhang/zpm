@@ -938,7 +938,9 @@ ClassMethod LoadNewModule(pDirectory As %String, ByRef pParams, pRepository As %
 		If ($Order(tLoadedList(tFirstLoaded)) '= "") {
 			$$$ThrowStatus($$$ERROR($$$GeneralError,"module.xml contains multiple documents."))
 		}
-		If ($Piece(tFirstLoaded,".",*) '= "module") {
+		Set tModuleExt = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)
+		Set tZPMExt = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,)
+		If (($$$ucase($Piece(tFirstLoaded,".",*)) '= tModuleExt) && ($$$ucase($Piece(tFirstLoaded,".",*)) '= tZPMExt)) {
 			$$$ThrowStatus($$$ERROR($$$GeneralError,"No module definition found."))
 		}
 		Set tModuleName = $Piece(tFirstLoaded,".",1,*-1)

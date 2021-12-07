@@ -253,7 +253,7 @@ ClassMethod CheckDirectoryContents(pPath As %String, pExpectedModuleName As %Str
 			// List contents and assert that they match pModuleName
 			Set tSC = $System.OBJ.Load(tCurrentFile,"-d",,.tLoadedList,1)
 			If $$$ISOK(tSC) {
-				If (tLoadedList '= pExpectedModuleName_".MODULE") {
+				If (tLoadedList '= pExpectedModuleName_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION) {
 					Set tModuleName = $Piece(tLoadedList,".",1,*-1)
 					Set pMessage = $$$FormatText("File '%1' already contains module manifest for '%2'.",tCurrentFile,tModuleName)
 					Set tSC = $$$ERROR($$$GeneralError,pMessage)

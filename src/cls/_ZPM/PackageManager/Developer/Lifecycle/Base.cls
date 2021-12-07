@@ -398,7 +398,7 @@ Method %Reload(ByRef pParams) As %Status
 			Quit
 		}
 		set first = $$$lcase(first)
-    If ($$$ucase($Piece(first,".",*)) '= $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)) {
+    If (($$$ucase($Piece(first,".",*)) '= $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)) && ($$$ucase($Piece(first,".",*)) '= $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,))) {
 			Set tSC = $$$ERROR($$$GeneralError,"No module definition found.")
 			Quit
 		}
@@ -482,7 +482,7 @@ Method %Reload(ByRef pParams) As %Status
 				}
 			}
 		}
-		
+
 		// call %OnModifyResources to let the source control class do any other mapping it needs to
 		Set tSC = ##class(%ZPM.PackageManager.Developer.Extension.SourceControl.Interface).%OnModifyResources(..Module)
 	} Catch e {
@@ -1405,7 +1405,8 @@ Method GetResourceRelativePath(pResource As %String, pExtension As %String) As %
 	
 	// Intentionally does not support PKG - classes must be exported individually.
 	Set tDirectory = $Case(tExtension,
-		"ZPM":"",
+		$EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,):"",
+		$EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,):"",
 		"LOC":"localize/",
 		"INC":"inc/",
 		"MAC":"mac/",
@@ -1420,7 +1421,8 @@ Method GetResourceRelativePath(pResource As %String, pExtension As %String) As %
 		)
 		
 	Set tFile = $Case(tExtension,
-		"ZPM":"module.xml",
+		$EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,):"module.xml",
+		$EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,):"module.xml",
 		"LOC":$tr(tName,".%","/")_".xml",
 		"INC":$tr(tName,".%","/_")_".inc",
 		"MAC":$tr(tName,".%","/_")_".mac",

@@ -867,7 +867,7 @@ Method GetResolvedReferences(Output pReferenceArray, pLockedDependencies As %Boo
 			}
 		}
 		
-		Set pReferenceArray(..Name_".ZPM") = ""
+		Set pReferenceArray(..Name_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION) = ""
 		
 		Set tKey = ""
 		For {
@@ -899,7 +899,7 @@ Method GetResolvedReferences(Output pReferenceArray, pLockedDependencies As %Boo
 				}
 				
 				// Don't pass along the phase
-				Set pReferenceArray(tModName_".ZPM") = ..Name
+				Set pReferenceArray(tModName_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION) = ..Name
 				
 				// pLockedDependencies=0 to avoid duplicating effort on nested dependencies;
 				// this loop will already get all of them.
@@ -1012,7 +1012,7 @@ Method %OnOpen() As %Status [ Private, ServerOnly = 1 ]
 			New %SourceControl
 			Do ##class(%Studio.SourceControl.Interface).SourceControlCreate()
 		}
-		Set tExternalName = ##class(%Studio.SourceControl.Interface).ExternalName(..Name_".ZPM")
+		Set tExternalName = ##class(%Studio.SourceControl.Interface).ExternalName(..Name_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION)
 		If (tExternalName '= "") {
 			Set tDirectory = ##class(%File).GetDirectory(tExternalName,1)
 			If (tDirectory '= "") {
@@ -1263,7 +1263,7 @@ Method GetStudioProject(Output pProject As %Studio.Project, pDeployedCode As %Bo
 		If (pDeployedCode = 0) {
 			// Include module manifest in project with non-deployed code. Caller will call once with pDeployedCode = 1,
 			// once with pDeployedCode = 0 to get separate Studio projects; only want this in one of them.
-			Do pProject.AddItem(..Name_".ZPM")
+			Do pProject.AddItem(..Name_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION)
 		}
 		
 		Set tResourceKey = ""

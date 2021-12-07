@@ -197,7 +197,7 @@ Method AddCacheItem(pModuleFileName As %String, pSubDirectory As %String, Output
 			Quit
 		}
 		Set tExt = $ZConvert($Piece($Get(tLoadedList),".",*),"U")
-		If (tExt '= $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)) {
+		If ((tExt '= $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)) && (tExt '= $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,))){
 			Quit
 		}
 		

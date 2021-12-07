@@ -7,6 +7,10 @@ Projection RegisterExtension As %ZPM.PackageManager.Developer.Document.Projectio
 
 Parameter EXTENSION = ".MODULE";
 
+// As long as we are still supporting both .MODULE & .ZPM extension, we need a default extension to use when exporting/creating. Change it according to your use case.
+
+Parameter DEFAULTEXTENSION = ".ZPM";
+
 Parameter INFOGLOBAL = "^ZPM.Dev.Doc.Module";
 
 Parameter STREAMCLASS = "%ZPM.PackageManager.Developer.Document.ModuleStream";
@@ -305,7 +309,7 @@ ClassMethod GetOther(Name As %String) As %String
 	Set tOtherDocs = ""
 	Try {
 		Set tExt = $Piece(Name,".",*)
-		If (tExt = "ZPM") {
+		If ((tExt = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)) || ($EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,))) {
 			Set tModuleName = $Piece(Name,".",1,*-1)
 			Set tResources = ##class(%SQL.Statement).%ExecDirect(,
 				"select UniqueName from %ZPM_PackageManager_Developer.ResourceReference where ""Module""->Name = ?",

@@ -88,7 +88,7 @@ Method %Package(ByRef pParams) As %Status
 				If (tModuleName = "ZHSLIB") {
 					// No-op - handled in PackageOneModule.
 				} Else {
-					Set tUndeployableItems(tModuleName_".ZPM") = ""
+					Set tUndeployableItems(tModuleName_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION) = ""
 				}
 			}
 			Set tRtn($i(tRtn)) = " Write !,""Installing "","_$$$QUOTE(tModuleName)
