@@ -13,7 +13,7 @@ Parameter DOMAIN = "ZPM";
 
 Parameter CSSINCLUDES As STRING = "bootstrap-3-3-5/dist/css/bootstrap.min.css";
 
-Parameter JSINCLUDES As STRING = "jquery-1.11.3.min.js,bootstrap-3-3-5/dist/js/bootstrap.min.js";
+Parameter JSINCLUDES As STRING = "jquery-3.5.1.min.js,bootstrap-3-3-5/dist/js/bootstrap.min.js";
 
 Property Page As %ZEN.Datatype.string;
 
@@ -121,7 +121,9 @@ Method %DrawFooter(pSeed As %String) As %Status
 	Quit $$$OK
 }
 
-ClientMethod setErrorMessage(msg, ctrl) [ Language = javascript ]
+ClientMethod setErrorMessage(
+	msg,
+	ctrl) [ Language = javascript ]
 {
 	if (!ctrl) {
 		var ctrl = 'warning';			
@@ -144,7 +146,12 @@ ClientMethod setErrorMessage(msg, ctrl) [ Language = javascript ]
 /// descProperty (optional): Description property name. If not passed in, valueProperty will be used
 /// allowEmpty (optional): if 1 is passed in, then build an empty selection
 /// example: this.loadDropdown('InstallerClass','jsonInstallerClassList','Name','DisplayName');
-ClientMethod loadDropdown(id, dataSource, valueProperty, descProperty, allowEmpty) [ Language = javascript ]
+ClientMethod loadDropdown(
+	id,
+	dataSource,
+	valueProperty,
+	descProperty,
+	allowEmpty) [ Language = javascript ]
 {
 	var data = zen(dataSource).getContentObject();
 	var ul = $('#'+id).closest('.dropdown').find('ul');
@@ -199,7 +206,11 @@ ClientMethod confirmCancel() [ Language = javascript ]
 }
 
 /// Method to return Module list used by multiple templates.
-Method GetModuleListSQL(ByRef pParms As %String, ByRef pSQL As %String, pCriteria As %ZEN.proxyObject, ByRef pPagingInfo As %String) As %Status
+Method GetModuleListSQL(
+	ByRef pParms As %String,
+	ByRef pSQL As %String,
+	pCriteria As %ZEN.proxyObject,
+	ByRef pPagingInfo As %String) As %Status
 {
 	Set pSQL = ""
 	Set tSC = ##class(%ZPM.PackageManager.Developer.API).GetModuleListSQL(.pSQL)
@@ -207,7 +218,11 @@ Method GetModuleListSQL(ByRef pParms As %String, ByRef pSQL As %String, pCriteri
 }
 
 /// Method to return list of installed snapshot modules
-Method GetSnapshotModuleListSQL(ByRef pParms As %String, ByRef pSQL As %String, pCriteria As %ZEN.proxyObject, ByRef pPagingInfo As %String) As %Status
+Method GetSnapshotModuleListSQL(
+	ByRef pParms As %String,
+	ByRef pSQL As %String,
+	pCriteria As %ZEN.proxyObject,
+	ByRef pPagingInfo As %String) As %Status
 {
 	// Only list snapshots
 	Quit ##class(%ZPM.PackageManager.Developer.API).GetInstalledModuleListSQL(.pSQL,1)
@@ -237,7 +252,10 @@ Method GetCommonLocalization(ByRef pResources As %String)
 	Set pResources("msgError") = $$$TextHTML("Please complete required fields or correct error")
 }
 
-ClassMethod CheckDirectoryContents(pPath As %String, pExpectedModuleName As %String, Output pMessage As %String) As %Status
+ClassMethod CheckDirectoryContents(
+	pPath As %String,
+	pExpectedModuleName As %String,
+	Output pMessage As %String) As %Status
 {
 	Set tSC = $$$OK
 	Set pMessage = ""
