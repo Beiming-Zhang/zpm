@@ -210,7 +210,7 @@ ClassMethod InstallApplication(pInstallInfo As %ZPM.PackageManager.Core.Installa
 		}
 		
 		// Run application "Configure" phase (should not compile/activate, or need to compile).
-		Set tModName = $PIECE(tLoaded,".ZPM")
+		Set tModName = $Piece(tLoaded,".ZPM")
 		Set tModule = ##class(%ZPM.PackageManager.Developer.Module).NameOpen(tModName,,.tSC)
 		If $$$ISERR(tSC) {
 			Quit

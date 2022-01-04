@@ -900,7 +900,7 @@ Method GetResolvedReferences(Output pReferenceArray, pLockedDependencies As %Boo
 				
 				// Don't pass along the phase
 				Set pReferenceArray(tModName_".ZPM") = ..Name
-
+				
 				// pLockedDependencies=0 to avoid duplicating effort on nested dependencies;
 				// this loop will already get all of them.
 				Set tSC = tModule.GetResolvedReferences(.pReferenceArray,0,,1)

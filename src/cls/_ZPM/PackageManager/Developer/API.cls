@@ -70,7 +70,7 @@ ClassMethod ExportDocumentForObject(pSourceModule As %ZPM.PackageManager.Develop
 		Do ##class(%ZPM.PackageManager.Developer.Utils).BeginCaptureOutput(.tCookie)
 		
 		Do ##class(%Studio.SourceControl.Interface).SourceControlCreate()
-
+		
 		Set tDocName = pSourceModule.Name_".ZPM"
 		
 		Set tSC = ##class(%Studio.SourceControl.Interface).GetStatus(tDocName,.tIsInSourceControl,.tIsEditable)
