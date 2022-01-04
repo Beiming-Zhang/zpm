@@ -65,9 +65,7 @@ Method GetModuleForInternalName(InternalName As %String, Output pIsModule As %Bo
 {
 	Set tModule = $$$NULLOREF
 	Set tExt = $ZCVT($Piece(InternalName,".",*),"U")
-	Set tModuleExt = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)
-	Set tZPMExt = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,)
-	Set pIsModule = ((tExt = tModuleExt) || (tExt = tZPMExt))
+	Set pIsModule = (tExt = "MODULE")
 	If pIsModule {
 		If ##class(%ZPM.PackageManager.Developer.Module).NameExists($Piece(InternalName,".",1,*-1)) {
 			Set tModule = ##class(%ZPM.PackageManager.Developer.Module).NameOpen($Piece(InternalName,".",1,*-1),,.tSC)
@@ -172,18 +170,18 @@ Method UserAction(Type As %Integer, Name As %String, InternalName As %String, Se
 		Set tModule = ..GetModuleForInternalName(InternalName,.tIsModule,.tInModule)
 		Set tPage = $Case(Name,
 			"%PackageMain,%AddToModule":"&Name="_tEspInternalName_"&Page=Add",
-			"%PackageMain,%Lifecycle\\%Publish":"&Name="_tModule.Name_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION_"&Page=Publish",
+			"%PackageMain,%Lifecycle\\%Publish":"&Name="_tModule.Name_".MODULE"_"&Page=Publish",
 			"%PackageMain,%GetSoftware":"&Page=GetSoftware",
 			"%PackageMain,%RepositorySettings":"&Page=Settings",
 			"%PackageContext,%AddToModule":"&Name="_tEspInternalName_"&Page=Add",
-			"%PackageContext,%Publish":"&Name="_tModule.Name_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION_"&Page=Publish",
+			"%PackageContext,%Publish":"&Name="_tModule.Name_".MODULE"_"&Page=Publish",
 			:"")
 		If (tPage '= "") {
 			Set Action = ..#ActionRunCSP
 			Set Target = "/isc/studio/templates/%25ZPM.PackageManager.Developer.Extension.PackageManager.UI.Index.cls?$NAMESPACE="_tEspNamespace_tPage
 		} ElseIf (Name="%PackageMain,%OpenModule") || (Name="%PackageContext,%OpenModule") {
 			Set Action = ..#ActionOpenDocuments
-			Set Target = tModule.Name_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION
+			Set Target = tModule.Name_".MODULE"
 		} ElseIf (Name="%PackageMain,%PackageManagerSettings") {
 			Set Action = ..#ActionRunCSP
 			Set Target = "/isc/studio/templates/%25ZPM.PackageManager.Developer.Extension.PackageManager.UI.Configuration.cls?$NAMESPACE="_tEspNamespace
@@ -213,13 +211,13 @@ Method UserAction(Type As %Integer, Name As %String, InternalName As %String, Se
 			Set Target = "/isc/studio/templates/"_$ZConvert(##class(%ZPM.PackageManager.Developer.Extension.SourceControl.Interface).%GetPage(),"O","URL")_"?$NAMESPACE="_tEspNamespace
 		} ElseIf (Name = "%PackageMain,%EditModuleWizard") || (Name="%PackageContext,%EditModuleWizard")  {
 			Set Action = ..#ActionRunCSP
-			Set Target = "/isc/studio/templates/%25ZPM.PackageManager.Developer.Extension.PackageManager.UI.ModuleWizard.cls?$NAMESPACE="_tEspNamespace_"&InternalName="_$ZConvert(tModule.Name_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION,"O","URL")
+			Set Target = "/isc/studio/templates/%25ZPM.PackageManager.Developer.Extension.PackageManager.UI.ModuleWizard.cls?$NAMESPACE="_tEspNamespace_"&InternalName="_$ZConvert(tModule.Name_".MODULE","O","URL")
 		} ElseIf (Name = "%PackageMain,%EditCustomDocType") {
 			Set Action = ..#ActionRunCSP
 			Set Target = "/isc/studio/templates/%25ZPM.PackageManager.Developer.Extension.PackageManager.UI.LocalizationDocWizard.cls?$NAMESPACE="_tEspNamespace_"&InternalName="_$ZConvert(InternalName,"O","URL")
 		} ElseIf (Name [ "%Custom") {
 			Set Action = ..#ActionRunCSP
-			Set Target = "/isc/studio/templates/%25ZPM.PackageManager.Developer.Extension.PackageManager.UI.Lifecycle.cls?$NAMESPACE="_tEspNamespace_"&InternalName="_$ZConvert(tModule.Name_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION,"O","URL")
+			Set Target = "/isc/studio/templates/%25ZPM.PackageManager.Developer.Extension.PackageManager.UI.Lifecycle.cls?$NAMESPACE="_tEspNamespace_"&InternalName="_$ZConvert(tModule.Name_".MODULE","O","URL")
 		} Else {
 			Set tModuleName = tModule.Name
 			If (Name [ "\\") {

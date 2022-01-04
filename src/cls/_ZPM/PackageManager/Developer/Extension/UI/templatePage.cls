@@ -121,9 +121,7 @@ Method %DrawFooter(pSeed As %String) As %Status
 	Quit $$$OK
 }
 
-ClientMethod setErrorMessage(
-	msg,
-	ctrl) [ Language = javascript ]
+ClientMethod setErrorMessage(msg, ctrl) [ Language = javascript ]
 {
 	if (!ctrl) {
 		var ctrl = 'warning';			
@@ -146,12 +144,7 @@ ClientMethod setErrorMessage(
 /// descProperty (optional): Description property name. If not passed in, valueProperty will be used
 /// allowEmpty (optional): if 1 is passed in, then build an empty selection
 /// example: this.loadDropdown('InstallerClass','jsonInstallerClassList','Name','DisplayName');
-ClientMethod loadDropdown(
-	id,
-	dataSource,
-	valueProperty,
-	descProperty,
-	allowEmpty) [ Language = javascript ]
+ClientMethod loadDropdown(id, dataSource, valueProperty, descProperty, allowEmpty) [ Language = javascript ]
 {
 	var data = zen(dataSource).getContentObject();
 	var ul = $('#'+id).closest('.dropdown').find('ul');
@@ -206,11 +199,7 @@ ClientMethod confirmCancel() [ Language = javascript ]
 }
 
 /// Method to return Module list used by multiple templates.
-Method GetModuleListSQL(
-	ByRef pParms As %String,
-	ByRef pSQL As %String,
-	pCriteria As %ZEN.proxyObject,
-	ByRef pPagingInfo As %String) As %Status
+Method GetModuleListSQL(ByRef pParms As %String, ByRef pSQL As %String, pCriteria As %ZEN.proxyObject, ByRef pPagingInfo As %String) As %Status
 {
 	Set pSQL = ""
 	Set tSC = ##class(%ZPM.PackageManager.Developer.API).GetModuleListSQL(.pSQL)
@@ -218,11 +207,7 @@ Method GetModuleListSQL(
 }
 
 /// Method to return list of installed snapshot modules
-Method GetSnapshotModuleListSQL(
-	ByRef pParms As %String,
-	ByRef pSQL As %String,
-	pCriteria As %ZEN.proxyObject,
-	ByRef pPagingInfo As %String) As %Status
+Method GetSnapshotModuleListSQL(ByRef pParms As %String, ByRef pSQL As %String, pCriteria As %ZEN.proxyObject, ByRef pPagingInfo As %String) As %Status
 {
 	// Only list snapshots
 	Quit ##class(%ZPM.PackageManager.Developer.API).GetInstalledModuleListSQL(.pSQL,1)
@@ -252,10 +237,7 @@ Method GetCommonLocalization(ByRef pResources As %String)
 	Set pResources("msgError") = $$$TextHTML("Please complete required fields or correct error")
 }
 
-ClassMethod CheckDirectoryContents(
-	pPath As %String,
-	pExpectedModuleName As %String,
-	Output pMessage As %String) As %Status
+ClassMethod CheckDirectoryContents(pPath As %String, pExpectedModuleName As %String, Output pMessage As %String) As %Status
 {
 	Set tSC = $$$OK
 	Set pMessage = ""
@@ -271,7 +253,7 @@ ClassMethod CheckDirectoryContents(
 			// List contents and assert that they match pModuleName
 			Set tSC = $System.OBJ.Load(tCurrentFile,"-d",,.tLoadedList,1)
 			If $$$ISOK(tSC) {
-				If (tLoadedList '= pExpectedModuleName_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION) {
+				If (tLoadedList '= pExpectedModuleName_".MODULE") {
 					Set tModuleName = $Piece(tLoadedList,".",1,*-1)
 					Set pMessage = $$$FormatText("File '%1' already contains module manifest for '%2'.",tCurrentFile,tModuleName)
 					Set tSC = $$$ERROR($$$GeneralError,pMessage)

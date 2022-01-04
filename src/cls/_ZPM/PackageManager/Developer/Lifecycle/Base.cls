@@ -398,7 +398,7 @@ Method %Reload(ByRef pParams) As %Status
 			Quit
 		}
 		set first = $$$lcase(first)
-    If (($$$ucase($Piece(first,".",*)) '= $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)) && ($$$ucase($Piece(first,".",*)) '= $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,))) {
+   		If ($Piece(first,".",*) '= "zpm") {
 			Set tSC = $$$ERROR($$$GeneralError,"No module definition found.")
 			Quit
 		}
@@ -746,7 +746,7 @@ Method %Export(ByRef pParams, ByRef pTargetDirectory As %String, Output pDepende
 				
 				Set tExt = $Piece(tFullResourceName,".",*)
 				Set tName = $Piece(tFullResourceName,".",1,*-1)
-				If ($$$ucase(tExt) = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)) {
+				If ($$$ucase(tExt) = "ZPM") {
 					If (tName '= ..Module.Name) {
 						Set pDependencyGraph(tName,"Location") = ".modules/"_tName_"/"
 					}
@@ -774,7 +774,7 @@ Method %Export(ByRef pParams, ByRef pTargetDirectory As %String, Output pDepende
 				Set tRelativePath = "preload/"_tRelativePath
 			}
 			
-			If ($$$ucase(tExt) = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)) && (tName '= ..Module.Name) {
+			If (tExt = "ZPM") && (tName '= ..Module.Name) {
 				Set tRelativePath = pDependencyGraph(tName,"Location")_tRelativePath
 			} ElseIf (tSrcModule '= "") && (tSrcModule '= ..Module.Name) {
 				Set tRelativePath = pDependencyGraph(tSrcModule,"Location")_tRelativePath
@@ -1405,8 +1405,7 @@ Method GetResourceRelativePath(pResource As %String, pExtension As %String) As %
 	
 	// Intentionally does not support PKG - classes must be exported individually.
 	Set tDirectory = $Case(tExtension,
-		$EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,):"",
-		$EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,):"",
+		"ZPM":"",
 		"LOC":"localize/",
 		"INC":"inc/",
 		"MAC":"mac/",
@@ -1421,8 +1420,7 @@ Method GetResourceRelativePath(pResource As %String, pExtension As %String) As %
 		)
 		
 	Set tFile = $Case(tExtension,
-		$EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,):"module.xml",
-		$EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,):"module.xml",
+		"ZPM":"module.xml",
 		"LOC":$tr(tName,".%","/")_".xml",
 		"INC":$tr(tName,".%","/_")_".inc",
 		"MAC":$tr(tName,".%","/_")_".mac",

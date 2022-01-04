@@ -118,7 +118,7 @@ Method %Package(ByRef pParams) As %Status
 		$$$ThrowOnError(tSC)
 		
 		// Export module manifest
-		Set tSC = $System.OBJ.Export(..Module.Name_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION,tWorkingDirectory_"module.xml", "/diffexport")
+		Set tSC = $System.OBJ.Export(..Module.Name_".ZPM",tWorkingDirectory_"module.xml", "/diffexport")
 		$$$ThrowOnError(tSC)
 		
 		Set tSC = ..OnBeforeArtifact(tExportDirectory,tWorkingDirectory,.pParams)

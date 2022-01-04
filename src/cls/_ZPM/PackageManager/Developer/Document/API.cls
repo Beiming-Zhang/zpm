@@ -28,13 +28,11 @@ ClassMethod GetOther(Name As %String) As %String
 	Set tOthers = ""
 	Set tName = $Piece(Name,".",1,*-1)
 	Set tExt = $Piece(Name,".",*)
-	Set tModuleExt = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)
-	Set tZPMExt = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,)
 	If (tExt = "API") {
 		If ##class(%ZPM.PackageManager.Developer.Module).NameExists(tName) {
-			Set tOthers = tName_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION
+			Set tOthers = tName_".ZPM"
 		}
-	} ElseIf ((tExt = tModuleExt) || (tExt = tZPMExt)) {
+	} ElseIf (tExt = "MODULE") {
 		If ##class(%ZPM.PackageManager.Developer.Document.APIStream).NameExists(tName) {
 			Set tOthers = tName_".API"
 		}

@@ -3,13 +3,9 @@ Include (%ZPM.PackageManager.Common, %occErrors)
 Class %ZPM.PackageManager.Developer.Document.Module Extends %ZPM.PackageManager.Developer.Document.AbstractDocument
 {
 
-Projection RegisterExtension As %ZPM.PackageManager.Developer.Document.Projection(DocumentDescription = "Application Module", DocumentExtension = "MODULE", DocumentNew = 1, DocumentType = "xml", XMLNamespace = "http://www.intersystems.com/PackageManager");
+Projection RegisterExtension As %ZPM.PackageManager.Developer.Document.Projection(DocumentDescription = "Application Module", DocumentExtension = "ZPM", DocumentNew = 1, DocumentType = "xml", XMLNamespace = "http://www.intersystems.com/PackageManager");
 
-Parameter EXTENSION = ".MODULE";
-
-// As long as we are still supporting both .MODULE & .ZPM extension, we need a default extension to use when exporting/creating. Change it according to your use case.
-
-Parameter DEFAULTEXTENSION = ".ZPM";
+Parameter EXTENSION = ".ZPM";
 
 Parameter INFOGLOBAL = "^ZPM.Dev.Doc.Module";
 
@@ -309,7 +305,7 @@ ClassMethod GetOther(Name As %String) As %String
 	Set tOtherDocs = ""
 	Try {
 		Set tExt = $Piece(Name,".",*)
-		If ((tExt = $EXTRACT(##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,2,)) || ($EXTRACT(##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,2,))) {
+		If (tExt = "ZPM") {
 			Set tModuleName = $Piece(Name,".",1,*-1)
 			Set tResources = ##class(%SQL.Statement).%ExecDirect(,
 				"select UniqueName from %ZPM_PackageManager_Developer.ResourceReference where ""Module""->Name = ?",

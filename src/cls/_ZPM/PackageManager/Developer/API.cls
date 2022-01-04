@@ -3,11 +3,6 @@ Include (%occInclude, %occErrors, %ZPM.PackageManager.Common)
 Class %ZPM.PackageManager.Developer.API
 {
 
-ClassMethod GetModuleName(pFileName As %String) As %String
-{
-	Return $Piece($Piece(pFileName,##class(%ZPM.PackageManager.Developer.Document.Module).#EXTENSION,1), ##class(%ZPM.PackageManager.Developer.Document.ZPM).#EXTENSION,1)
-}
-
 /// Converts <var>pObject</var> to a Module object and returns it by reference.
 /// (The caller may then export it to XML, for example.)
 ClassMethod CreateModule(pObject As %ZEN.proxyObject, Output pModule As %ZPM.PackageManager.Developer.Module) As %Status
@@ -76,7 +71,7 @@ ClassMethod ExportDocumentForObject(pSourceModule As %ZPM.PackageManager.Develop
 		
 		Do ##class(%Studio.SourceControl.Interface).SourceControlCreate()
 
-		Set tDocName = pSourceModule.Name_##class(%ZPM.PackageManager.Developer.Document.Module).#DEFAULTEXTENSION
+		Set tDocName = pSourceModule.Name_".ZPM"
 		
 		Set tSC = ##class(%Studio.SourceControl.Interface).GetStatus(tDocName,.tIsInSourceControl,.tIsEditable)
 		$$$ThrowOnError(tSC)
@@ -407,7 +402,7 @@ ClassMethod GetModuleProperties(pModuleName As %String, Output pObject As %ZEN.p
 		Set tSC = $$$OK
 		Set pObject = ##class(%ZEN.proxyObject).%New()
 		Set pObject.error = ""
-		Set tModuleName = ..GetModuleName(pModuleName)
+		Set tModuleName = $Piece(pModuleName,".ZPM",1)
 		If tModuleName = "" {
 			Set tModuleObj = ##class(%ZPM.PackageManager.Developer.Module).%New()
 		} Else {
@@ -557,7 +552,7 @@ ClassMethod GetDependencySQL(pModuleName As %String, Output pSQL As %String, Out
 	Set pSQL = ""
 	Set tSC = $$$OK
 	Try {
-		Set tModuleName = ..GetModuleName(pModuleName)
+		Set tModuleName = $Piece(pModuleName,".ZPM",1)
 		If tModuleName '= "" {
 			Set pSQL = "select Dependencies_Name as ModuleName, Dependencies_VersionString as Version, Dependencies_Scope as Scope "_
 				"from %ZPM_PackageManager_Developer.Module_Dependencies "_
@@ -576,7 +571,7 @@ ClassMethod GetResourceSQL(pModuleName As %String, Output pSQL As %String, Outpu
 	Set pSQL = ""
 	Set tSC = $$$OK
 	Try {
-		Set tModuleName = ..GetModuleName(pModuleName)
+		Set tModuleName = $Piece(pModuleName,".ZPM",1)
 		If tModuleName '= "" {
 			Set tProcessorExpression = "NVL(ProcessorClass,%ZPM_PackageManager_Developer_Lifecycle.GET_DEFAULT_RESOURCE_PROCESSOR(""Module""->LifecycleClass,Name))"
 			Set pSQL = "select Name,Preload,Scope,Deploy, "_
@@ -599,7 +594,7 @@ ClassMethod GetResourceAttributeSQL(pModuleName As %String, Output pSQL As %Stri
 	Set pSQL = ""
 	Set tSC = $$$OK
 	Try {
-		Set tModuleName = ..GetModuleName(pModuleName)
+		Set tModuleName = $Piece(pModuleName,".ZPM",1)
 		If tModuleName '= "" {
 			Set pSQL = "select ResourceReference->Name ResourceReference,element_key Name,Attributes Value "_
 				"from %ZPM_PackageManager_Developer.ResourceReference_Attributes "_
