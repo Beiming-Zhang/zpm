@@ -3,8 +3,6 @@ Include (%ZPM.PackageManager.Common, %occErrors)
 Class %ZPM.PackageManager.Developer.Extension.SourceControl.ISC Extends (%Studio.SourceControl.ISC, %ZPM.PackageManager.Developer.Extension.SourceControl.Interface)
 {
 
-Parameter SETTINGSPAGE = "%ZPM.PackageManager.Developer.Extension.SourceControl.ISC.UI.cls";
-
 Parameter NOPREFIXCHARCODE = 8;
 
 /// Invoked before each lifecycle phase
@@ -59,7 +57,7 @@ ClassMethod OnBeforeReload(pModule As %ZPM.PackageManager.Developer.Module, ByRe
 				$$$ThrowStatus(tSC)
 			}
 		}
-		If $Get(pParams("Perforce","Sync")) && (..ExtName(pModule.Name_".MODULE") '= "") {
+		If $Get(pParams("Perforce","Sync")) && (..ExtName(pModule.Name_".ZPM") '= "") {
 			Set tSC = ..RunCmd("p4 sync "_tModuleRoot_"...#head",.tOutput,tVerbose)
 			If $$$ISERR(tSC) && ($System.Status.GetErrorText(tSC)["up-to-date") {
 				// Not actually a problem.
@@ -83,10 +81,10 @@ ClassMethod OnAfterReload(pModule As %ZPM.PackageManager.Developer.Module, ByRef
 	Try {
 		Set tRef = ""
 		Set tName = $Select($IsObject(pModule):pModule.Name,1:pModule)
-		Set tModuleFileName = ..ExtName(tName_".MODULE")
+		Set tModuleFileName = ..ExtName(tName_".ZPM")
 		If (tModuleFileName '= "") {
-			Set ^Sources(0,"FileTimeStamp",tName_".MODULE") = ##class(%Library.File).GetFileDateModified(tModuleFileName,1)
-			Set ^Sources(0,"ItemTimeStamp",tName_".MODULE") = ##class(%Library.RoutineMgr).TS(tName_".MODULE")
+			Set ^Sources(0,"FileTimeStamp",tName_".ZPM") = ##class(%Library.File).GetFileDateModified(tModuleFileName,1)
+			Set ^Sources(0,"ItemTimeStamp",tName_".ZPM") = ##class(%Library.RoutineMgr).TS(tName_".ZPM")
 			Kill ^||ZPMResourceArray
 			Merge ^||ZPMResourceArray = ^Sources("MODULE",tName,"r")
 			Set tReference = $Query(^||ZPMResourceArray,1,tFileName)
@@ -692,7 +690,7 @@ ClassMethod Name(InternalName As %String) As %String
 {
 	Set tInternalName = ""
 	Set InternalName=##class(%Studio.SourceControl.Interface).normalizeName(InternalName)
-	If ($zcvt($Piece(InternalName,".",*),"U") = "MODULE") {
+	If ($zcvt($Piece(InternalName,".",*),"U") = "ZPM") {
 		// Get correct case for name.
 		Set tModuleName = $Piece(InternalName,".",1,*-1)
 		If ##class(%ZPM.PackageManager.Developer.Module).NameExists(tModuleName,.tID) {
@@ -823,7 +821,7 @@ Method UndoCheckout(InternalName As %String) As %Status
 {
 	Set tSC = $$$OK
 	Try {
-		If $Piece(InternalName,".",*) = "MODULE" {
+		If $Piece(InternalName,".",*) = "ZPM" {
 			// For modules: on "undo add" of a module, remove all mappings for the module and its resources.
 			Set tFileName = ..ExternalName(InternalName)
 			If tFileName = "" {
@@ -1234,7 +1232,7 @@ Method UserAction(Type As %Integer, Name As %String, InternalName As %String, Se
 	Try {
 		Set Action=0,Target="",Msg="",Reload=0
 		Set tExtension = $Piece(InternalName,".",*)
-		Set tIsModule = (tExtension = "MODULE")
+		Set tIsModule = (tExtension = "ZPM")
 		Set tIsAdd = ((Type = 1) && (Name = 1)) || ((Type = 0) && (Name [ "%AddToSourceControl"))
 		If tIsAdd && tIsModule {
 			// Do not show "Add" dialog if already mapped
@@ -1297,7 +1295,7 @@ Method AfterUserAction(Type As %Integer, Name As %String, InternalName As %Strin
 	Set tSC = $$$OK
 	Try {
 		Set Reload=0
-		Set tIsModule = ($Piece(InternalName,".",*) = "MODULE")
+		Set tIsModule = ($Piece(InternalName,".",*) = "ZPM")
 		Set tIsAdd = ((Type = 1) && (Name = 1)) || ((Type = 0) && (Name [ "%AddToSourceControl"))
 		If tIsAdd && tIsModule && (..Name(InternalName) = "") {
 			// no-op (already added)
@@ -1331,7 +1329,7 @@ Method OnMenuItem(MenuName As %String, InternalName As %String, SelectedText As 
 		Set tInSourceControl = +$get(tInSourceControl)
 		Set tEditable = +$get(tEditable)
 		Set tCheckedOut = +$get(tCheckedOut)
-		Set tIsModule = $Case($Piece(InternalName,".",*),"MODULE":1,:0)
+		Set tIsModule = $Case($Piece(InternalName,".",*),"ZPM":1,:0)
 		If (tName = "%AddToSourceControl") {
 			If ('tEditable)&&(tCheckedOut) {
 				Set Enabled = 0	; InternalName is checked out by a different user
@@ -1429,7 +1427,7 @@ ClassMethod OnMakeModuleEditable(pModule As %ZPM.PackageManager.Developer.Module
 			Quit
 		}
 		
-		Set tSC = ..%SourceControlMethod("CheckOut",pModule.Name_".MODULE")
+		Set tSC = ..%SourceControlMethod("CheckOut",pModule.Name_".ZPM")
 	} Catch e {
 		Set tSC = e.AsStatus()
 	}

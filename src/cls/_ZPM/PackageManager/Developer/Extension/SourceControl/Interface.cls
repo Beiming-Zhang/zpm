@@ -28,13 +28,6 @@ ClassMethod %GetClass() As %String [ Final ]
 	Quit $ClassName(tPrimaryClass)
 }
 
-ClassMethod %GetPage() As %String [ Final ]
-{
-	Set tClass = ..%GetClass()
-	If (tClass = "") { Quit "" }
-	Quit $Parameter(tClass,"SETTINGSPAGE")
-}
-
 ClassMethod %OnBeforePhase(pModule As %ZPM.PackageManager.Developer.Module, pPhase As %String, ByRef pParams) As %Status [ Final ]
 {
 	Set tClass = ..%GetClass()
