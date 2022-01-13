@@ -1013,7 +1013,7 @@ ClassMethod Init(ByRef pCommandInfo) [ Internal ]
 		Set tResult = $$$HasModifier(pCommandInfo,"compositeClass")
 	} Else {
 		Write !
-		Set tHelp = "What is a composite class?"
+		Set tHelp = "What is a composite class? Will update later"
 		Set tResponse = ##class(%Library.Prompt).GetYesNo("Do you want to use a non-default composite class for this namespace?",.tResult,.tHelp)
 		If (tResponse '= $$$SuccessResponse) {
 			$$$ThrowStatus($$$ERROR($$$GeneralError,"Operation cancelled."))
@@ -1048,7 +1048,7 @@ ClassMethod Init(ByRef pCommandInfo) [ Internal ]
 	}
 	If tResult {
 		If tQuiet {
-			Set tPackageMgrSCClass = $$$GetModifier(pCommandInfo,"packageMgrClass")
+			Set tPackageMgrSCClass = $$$GetModifier(pCommandInfo,"packageManagerClass")
 		} Else {
 			Write !
 			Set tHelp = "help msg for packageMgrClass class. Will update later"
