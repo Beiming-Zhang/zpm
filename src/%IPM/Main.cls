@@ -2348,7 +2348,65 @@ ClassMethod UpdateLanguageExtensions(pVerbose As %Boolean = 0, pTestOnly As %Boo
 	Quit tSC
 #; These are the actual contents of %ZLANGC00 (to be added/updated)
 $$$STARTTAG
-ZPM(pArgs...) If $System.CLS.IsMthd("%IPM.Main", "Shell") { Do ##class(%IPM.Main).Shell(pArgs...) Quit } Else { Write !, "InterSystems Package Manager is not installed in this namespace." Quit }
+ZPM(pArgs...)
+ If $System.CLS.IsMthd("%IPM.Main", "Shell") { 
+ 	Do ##class(%IPM.Main).Shell(pArgs...) Quit
+ } Else { 
+ 	Write !, "InterSystems Package Manager(IPM) is not installed in this namespace.", !
+ 	Set tList(1) = "Enable IPM for this namespace"
+ 	Set tList(2) = "Enable IPM for all non-%SYS explicit namespaces"
+ 	Set tList(3) = "No"
+ 	Set tValue = 1
+ 	Set tResponse = ##class(%Library.Prompt).GetMenu("Do you want to enable IPM?", .tValue, .tList,,128)
+	If (tResponse '= 1) {
+		Write !, "Unsupported response. Operation cancelled."
+		Quit
+	}
+	If (tValue = 1) {
+		Write !, "Enabling IPM for this namespace: "_$Namespace
+		Set currentNS = $Namespace
+		New $Namespace
+		Set $Namespace = "%SYS"
+		Kill tProperties
+      	Set tProperties("Database") = "CORELIB"
+      	Set tSC = ##Class(Config.MapPackages).Create(currentNS, "%IPM", .tProperties)
+      	If (tSC = 1) {
+      		Write !, "IPM enabled for namespace: "_currentNS
+      	} Else {
+	      	Write !, $system.Status.GetErrorText(tSC)
+	    }
+	} ElseIf (tValue = 2) {
+		Write !, "Enabling IPM system-wide..."
+		New $Namespace
+		Set $Namespace = "%SYS"
+		Set tSC = ##class(%SYS.Namespace).ListAll(.tAllNS)
+		If (tSC '= 1) {
+			Write !, $system.Status.GetErrorText(tSC)
+			Quit
+		}
+	  	Set currentNS=$ORDER(tAllNS(""))
+	 	While (currentNS '="") {
+	    	Set tSC = 1
+	    	If (currentNS '= "%SYS") && ($ZCONVERT(currentNS, "U") = currentNS) {
+	      		Kill tProperties
+	      		Set tProperties("Database") = "CORELIB"
+	      		If '##Class(Config.MapPackages).Exists(currentNS, "%IPM", .tProperties) {
+	        		Kill tProperties
+	       			Set tProperties("Database") = "CORELIB"
+	       			Write !, "Enabling IPM for namespace: "_currentNS
+	        		Set tSC = ##Class(Config.MapPackages).Create(currentNS, "%IPM", .tProperties)
+	    		}
+	    	}
+	    	If (tSC '= 1) {
+				Write !, $system.Status.GetErrorText(tSC)
+				Quit
+			}
+	    	Set currentNS = $ORDER(tAllNS(currentNS))
+		}
+		Write !, "IPM enabled system-wide."
+ 	}
+ 	Quit
+ }
 $$$ENDTAG
 #; Need an extra line down here to avoid the end bracket being on the same line as $$$ENDTAG - a comment is just fine.
 }

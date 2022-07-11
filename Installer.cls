@@ -15,23 +15,26 @@ XData PM [ XMLNamespace = INSTALLER ]
 <Manifest>
 <Default Name="MODDIR" Dir="${MGRDIR}" />
 <Default Name="SRCDIR" Dir="${MODDIR}src" />
-<Default Name="CORELIB" Value="CORELIB"/>
 <Default Name="REGISTRY" Value="https://pm.community.intersystems.com" />
+<Default Name="MAPALLNS" Value="0" />
 <Default Name="TRACKINGID" Value="UA-126752118-1" />
 
-<Namespace Name="${CORELIB}" Code="${CORELIB}" Data="${CORELIB}" Create="yes" Ensemble="0">
+<Namespace Name="CORELIB" Code="CORELIB" Data="CORELIB" Create="yes" Ensemble="0">
       <Configuration>
-        <Database Name="${CORELIB}" Create="no" />
-        <ClassMapping Package="%IPM" From="${CORELIB}" />
+        <Database Name="CORELIB" Create="overwrite" Dir="${MGRDIR}/CORELIB" />
+        <ClassMapping Package="%IPM" From="CORELIB" />
       </Configuration>
   <Import File="${SRCDIR}" Recurse="1"/>
 </Namespace>
 
 <Namespace Name="${CURNS}" Code="${CURNSRoutineDB}" Data="${CURNSGlobalDB}" Create="no" Ensemble="0">
   <Configuration>
-      <ClassMapping Package="%IPM" From="${CORELIB}" />
+      <ClassMapping Package="%IPM" From="CORELIB" />
   </Configuration>
-  
+  <Invoke Class="IPM.Installer" Method="ZPMCleanAfterImport" CheckStatus="true">
+    <Arg Value="CORELIB"/>
+    <Arg Value="${CORELIBNSEXISTS}"/>
+  </Invoke>
   <Invoke Class="%IPM.Main" Method="UpdateLanguageExtensions" CheckStatus="true" />
   <Invoke Class="IPM.Installer" Method="ZPMInit" CheckStatus="true">
     <Arg Value="${REGISTRY}"/> 
@@ -41,6 +44,11 @@ XData PM [ XMLNamespace = INSTALLER ]
     <Arg Value="${MODDIR}"/>
   </Invoke>
   <Invoke Class="IPM.Installer" Method="ZPMCompile" CheckStatus="true" />
+  <If Condition='${MAPALLNS}'>
+    <Invoke Class="IPM.Installer" Method="ZPMMapAllNS" CheckStatus="true">
+      <Arg Value="1"/>
+      </Invoke>
+  </If>
 </Namespace>
 
 </Manifest>
@@ -55,13 +63,11 @@ ClassMethod setup(ByRef pVars, pLogLevel As %Integer, pInstaller As %Installer.I
   Do %code.WriteLine(" Set prevNS = $namespace")
   Do %code.WriteLine(" New $Namespace")
   Do %code.WriteLine(" Set $Namespace = ""%SYS"" ")
-  // Check whether or not corelib exists
-  Do %code.WriteLine(" Set tLibExists = ##class(SYS.Database).%ExistsId(""CORELIB"")")
-  Do %code.WriteLine(" If 'tLibExists { Set tSC = $$$ERROR($$$GeneralError,""CORELIB database does not exist, cannot install IPM!"") Quit tSC}")
   Do %code.WriteLine(" Kill properties")
   Do %code.WriteLine(" Set sc = ##class(Config.Namespaces).Get(prevNS, .properties)")
   Do %code.WriteLine(" Set pVars(""CURNSRoutineDB"")=$Get(properties(""Routines""))")
   Do %code.WriteLine(" Set pVars(""CURNSGlobalDB"")=$Get(properties(""Globals""))")
+  Do %code.WriteLine(" Set pVars(""CORELIBNSEXISTS"") = ##class(%SYS.Namespace).Exists(""COREDB"")")
   Quit ##class(%Installer.Manifest).%Generate(%compiledclass, %code, "PM")
 }
 
@@ -75,7 +81,7 @@ ClassMethod AsyncSetup(Args...)
   Do $System.Event.Signal($ZParent, tSC)
 }
 
-ClassMethod ZPMInit(pRegistry As %String = "", pAnalyticsTrackingID As %String = "")
+ClassMethod ZPMInit(pRegistry As %String = "", pAnalyticsTrackingID As %String = "") As %Status
 {
     If (pRegistry'="") {
       $$$QuitOnError(##class(%IPM.Main).Shell("repo -t registry -name registry -url "_ pRegistry))
@@ -87,14 +93,67 @@ ClassMethod ZPMInit(pRegistry As %String = "", pAnalyticsTrackingID As %String =
     Quit $$$OK
 }
 
-ClassMethod ZPMLoad(pDirectoryName)
+ClassMethod ZPMLoad(pDirectoryName As %String) As %Status
 {
   Quit ##class(%IPM.Main).Shell("load "_pDirectoryName)
 }
 
-ClassMethod ZPMCompile()
+ClassMethod ZPMCompile() As %Status
 {
   Quit ##class(%IPM.Main).Shell("ZPM compile")
+}
+
+/// Remove temporary namespace for importing IPM source code 
+ClassMethod ZPMCleanAfterImport(pDBName As %String, pDBExists) As %Status
+{
+  New $Namespace
+  Set $Namespace = "%SYS"
+  Set tSC = $$$OK
+  Set tLibExists = ##class(SYS.Database).%ExistsId(pDBName)
+  If 'tLibExists {
+    Set tSC = $$$ERROR($$$GeneralError,"CORELIB database does not exist and is not created. Cannot install IPM!") 
+    Quit tSC
+  }
+  // Now that database that contains source code of IPM exists, delete its namespace which is used only for loading if not exists before installing
+  If 'pDBExists {
+    Set tSC = ##class(Config.Namespaces).Delete(pDBName)
+  }
+  Quit tSC
+}
+
+/// Enable/disable IPM by creating/deleting package mapping for all existing namespaces,
+/// but ignore all implicit namespaces
+ClassMethod ZPMMapAllNS(pEnable As %Boolean = 1) As %Status
+{
+  New $Namespace
+  Set $Namespace = "%SYS"
+  $$$QuitOnError(##class(%SYS.Namespace).ListAll(.tAllNS))
+  Set currentNS=$ORDER(tAllNS(""))
+  While (currentNS '="") {
+    Set tSC = $$$OK
+    // configure mapping for all explicit namespaces (implicit ns will only be displayed in lowercase) and non-%SYS ns
+    If (currentNS '= "%SYS") && ($ZCONVERT(currentNS, "U") = currentNS) {
+      // need to kill the reference everything as the classmethods will overwrite it
+      Kill tProperties
+      Set tProperties("Database") = "CORELIB"
+      If pEnable && '##Class(Config.MapPackages).Exists(currentNS, "%IPM", .tProperties) {
+        Kill tProperties
+        Set tProperties("Database") = "CORELIB"
+        Set tSC = ##Class(Config.MapPackages).Create(currentNS, "%IPM", .tProperties)
+      } Else {
+        Kill tProperties
+        Set tProperties("Database") = "CORELIB"
+        If ##Class(Config.MapPackages).Exists(currentNS, "%IPM", .tProperties) {
+          Set tSC = ##Class(Config.MapPackages).Delete(currentNS, "%IPM")
+        }
+      }
+    }
+    If $$$ISERR(tSC) {
+      Return tSC
+    }
+    Set currentNS = $ORDER(tAllNS(currentNS))
+  }
+  Quit $$$OK
 }
 
 ClassMethod CreateProjection(classname As %String, ByRef parameters As %String, modified As %String, qstruct) As %Status
