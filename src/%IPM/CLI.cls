@@ -1,6 +1,6 @@
 Include (%occSAX, %syGluedef, %IPM.Formatting)
 
-Class %IPM.CLI Extends %IPM.CLI.Commands
+Class %IPM.CLI Extends %IPM.CLI.Comma
 {
 
 /// Name of include file that will contain accessor macros for modifiers
