@@ -13,7 +13,6 @@ Method ConstructDependencyGraph(pGraphConfig As %IPM.Utils.DependencyGraphConfig
 	Set tSC = $$$OK
 	Try {
 		Set pDepth = pGraphConfig.Depth
-		Kill pDependencyGraph
 		Do pGraphConfig.GetGraph(.pDependencyGraph)
 		Set pForceSnapshotReload = pGraphConfig.ForceSnapshotReload
 		Set pPhases = pGraphConfig.Phases
@@ -23,7 +22,6 @@ Method ConstructDependencyGraph(pGraphConfig As %IPM.Utils.DependencyGraphConfig
 		Set pKnownDependencies = pGraphConfig.KnownDependencies
 		Set pPermitDowngrade = pGraphConfig.PermitDowngrade
 		Set pCheckNestedScoped = pGraphConfig.CheckNestedScoped
-		Kill pSubModules
 		Do pGraphConfig.GetSubModules(.pSubModules)
 		
 		Kill tSubModules
@@ -155,7 +153,6 @@ Method ConstructDependencyGraph(pGraphConfig As %IPM.Utils.DependencyGraphConfig
 					Set tConstraintList = tConstraintList_$ListBuild(tLocalObj.Name_": "_tRangeString_" (currently installed, downgrade not permitted)")
 				}
 			}
-			
 			Set tSearchCriteria = ##class(%IPM.Repo.SearchCriteria).%New()
 			Set tSearchCriteria.Name = tDep.Name
 			Set tSearchCriteria.VersionExpression = tSearchExpr.ToString()
@@ -211,18 +208,15 @@ Method ConstructDependencyGraph(pGraphConfig As %IPM.Utils.DependencyGraphConfig
 						Set newGraphConfig.Phases = tPhases
 						Do newGraphConfig.SetSubModules(.pSubModules)
 						Set newGraphConfig.ModulePath = tModulePath_$ListBuild(tDep.Name)
-						Set tSC = tModule.ConstructDependencyGraph(pGraphConfig)
-						
+						Set tSC = tModule.ConstructDependencyGraph(newGraphConfig)
 						// Failure to resolve any of these dependencies is an immediate failure, and can be descriptive.
 						If $$$ISERR(tSC) {
 							Quit
 						}
-						Kill pDependencyGraph,pSubModules
 						Do newGraphConfig.GetGraph(.pDependencyGraph)
 						Do newGraphConfig.GetSubModules(.pSubModules)
 						Quit
 					}
-					
 					If (pPass = $$$FUZZY) {
 						Set tDependencyGraph(tDep.Name) = $ListBuild(tDepth,tQualifiedReference.ServerName,tModule.VersionString, tModule.State)
 						Set tDependencyGraph(tDep.Name,..Name_" "_..VersionString) = tDep.VersionString
@@ -262,7 +256,6 @@ Method ConstructDependencyGraph(pGraphConfig As %IPM.Utils.DependencyGraphConfig
 		If $$$ISERR(tSC) {
 			Quit
 		}
-		
 		If (pPass = $$$EXACT) {	
 			// Call for second pass (fuzzy version matching)
 			Set newGraphConfig = ##class(%IPM.Utils.DependencyGraphConfig).CreateConfigCopy(pGraphConfig, ..Name)
@@ -270,7 +263,6 @@ Method ConstructDependencyGraph(pGraphConfig As %IPM.Utils.DependencyGraphConfig
 			Do newGraphConfig.SetSubModules(.pSubModules)
 			Set newGraphConfig.Pass = $$$FUZZY
 			Set tSC = ..ConstructDependencyGraph(newGraphConfig)
-			Kill pDependencyGraph,pSubModules
 			Do newGraphConfig.GetGraph(.pDependencyGraph)
 			Do newGraphConfig.GetSubModules(.pSubModules)
 			If $$$ISERR(tSC) {
@@ -296,9 +288,9 @@ Method ConstructDependencyGraph(pGraphConfig As %IPM.Utils.DependencyGraphConfig
 					If $$$ISERR(tSC) {
 						Quit
 					}
+					Do newGraphConfig.GetGraph(.pDependencyGraph)
+					Do newGraphConfig.GetSubModules(.pSubModules)
 				}
-				Do newGraphConfig.GetGraph(.pDependencyGraph)
-				Do newGraphConfig.GetSubModules(.pSubModules)
 				If $$$ISERR(tSC) {
 					Quit
 				}
