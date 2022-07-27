@@ -57,6 +57,7 @@ Method GetSubModules(Output pSubModules)
 	Merge pSubModules = ..SubModules
 }
 
+/// Copy non-multidim fields of an config to a branch-new config object
 ClassMethod CreateConfigCopy(pConfigObj As %IPM.Utils.DependencyGraphConfig, pName As %String) As %IPM.Utils.DependencyGraphConfig
 {
 	Set newGraphConfig = ##class(%IPM.Utils.DependencyGraphConfig).%New(pConfigObj)
