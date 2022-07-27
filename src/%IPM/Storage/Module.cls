@@ -820,7 +820,6 @@ Method ConstructDependencyGraph(pGraphConfig As %IPM.Utils.DependencyGraphConfig
 		Set pKnownDependencies = pGraphConfig.KnownDependencies
 		Set pPermitDowngrade = pGraphConfig.PermitDowngrade
 		Set pCheckNestedScoped = pGraphConfig.CheckNestedScoped
-		Kill pSubModules
 		Do pGraphConfig.GetSubModules(.pSubModules)
 		
 		Kill tSubModules
