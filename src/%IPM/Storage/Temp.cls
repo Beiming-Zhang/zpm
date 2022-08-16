@@ -31,10 +31,6 @@ Method ConstructDependencyGraph(pGraphConfig As %IPM.Utils.DependencyGraphConfig
 		Set tRepositoryManager = ##class(%IPM.Repo.Manager).%Get(.tSC)
 		$$$ThrowOnError(tSC)
 		
-		// Disregard violation of dependencies of pending modules
-		Set tInstallContext = ##class(%IPM.General.InstallContext).%Get(.tSC)
-		$$$ThrowOnError(tSC)
-		
 		// May want to pass phases to subsequent calls
 		Set tPhases = $Case(pCheckNestedScoped, 1: pPhases, : "")
 		For i=1:1:..Dependencies.Count() {
@@ -84,9 +80,8 @@ Method ConstructDependencyGraph(pGraphConfig As %IPM.Utils.DependencyGraphConfig
 			If 'pIgnoreInstalledModules {
 				// Also apply requirements presented by other installed modules, with the exception of those that are:
 				//	* Known as dependencies of the root module being installed (and thus eligible for upgrade)
-				//	* Pending (re)installation
 				//  * Already in the dependency graph
-				Set tOtherDeps = pKnownDependencies_tInstallContext.GetPendingModuleList()
+				Set tOtherDeps = pKnownDependencies
 				Set tExistingDepKey = ""
 				For {
 					Set tExistingDepKey = $Order(pDependencyGraph(tExistingDepKey))
