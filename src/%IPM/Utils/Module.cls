@@ -21,8 +21,8 @@ ClassMethod CreateAndGetSSLConfig(ByRef pProperties) As %String
 }
 
 /// Format of <var>pDependencyGraph</var>:
-/// pDependencyGraph("module name") = $ListBuild(<depth>,<server name>,<version>)
-/// pDependencyGraph("module name","<dependent module> <dependent module version>") = <irrelevant>
+/// Graph("dependent module name") = $ListBuild(<depth>,<server name>,<exact version>,<module state>)
+/// Graph("dependent module name","<target module> <target module exact version>") = <irrelevant>
 ClassMethod LoadDependencies(ByRef pDependencyGraph, ByRef pParams, pWorkQueue As %SYSTEM.WorkMgr)
 {
 	// Suspend the error count to avoid spurious messages about errors being detected in load/compile.
