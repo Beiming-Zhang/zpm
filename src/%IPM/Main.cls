@@ -1711,7 +1711,7 @@ ClassMethod Load(ByRef pCommandInfo) [ Internal ]
 			Lock +^IPM.ModuleInstallLock(1):2
 			Set tSC = ##class(%IPM.Utils.Module).LoadNewModule(tTargetDirectory, .tParams)
 		} Catch e {
-			Set tSC=$$$ADDSC(tSC,e.AsStatus())
+			Set tSC = $$$ADDSC(tSC,e.AsStatus())
 		}
 		Lock -^IPM.ModuleInstallLock(1)
 		$$$ThrowOnError(tSC)
@@ -1775,9 +1775,9 @@ ClassMethod Install(ByRef pCommandInfo) [ Internal ]
 			Set tSC = $$$OK
 			Try {
 				Lock +^IPM.ModuleInstallLock(1):2
-				Set tSC = ##class(%IPM.Utils.Module).LoadModuleReference(tResult.ServerName,tResult.Name,tResult.VersionString,.tParams))
+				Set tSC = ##class(%IPM.Utils.Module).LoadModuleReference(tResult.ServerName,tResult.Name,tResult.VersionString,.tParams)
 			} Catch e {
-				Set tSC=$$$ADDSC(tSC,e.AsStatus())
+				Set tSC = $$$ADDSC(tSC,e.AsStatus())
 			}
 			Lock -^IPM.ModuleInstallLock(1)
 			$$$ThrowOnError(tSC)
