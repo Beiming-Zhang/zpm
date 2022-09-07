@@ -1695,12 +1695,12 @@ ClassMethod Load(ByRef pCommandInfo) [ Internal ]
 	If ##class(%File).DirectoryExists(tDirectoryName) {
 		Set tSC = $$$OK
 		Try {
-			Lock +^IPM.ModuleInstallLock(1):2
+			Lock +$$$ModuleInstallLock:2
 			Set tSC = ##class(%IPM.Utils.Module).LoadNewModule(tDirectoryName,.tParams)
 		} Catch e {
 			Set tSC=$$$ADDSC(tSC,e.AsStatus())
 		}
-		Lock -^IPM.ModuleInstallLock(1)
+		Lock -$$$ModuleInstallLock
 		$$$ThrowOnError(tSC)
 	} ElseIf ##class(%File).Exists(tDirectoryName),$$$lcase($PIECE(tDirectoryName, ".", *)) = "tgz" {
 		Set tTargetDirectory = $$$FileTempDirSys
@@ -1708,12 +1708,12 @@ ClassMethod Load(ByRef pCommandInfo) [ Internal ]
 		$$$ThrowOnError(tSC)
 		Set tSC = $$$OK
 		Try {
-			Lock +^IPM.ModuleInstallLock(1):2
+			Lock +$$$ModuleInstallLock:2
 			Set tSC = ##class(%IPM.Utils.Module).LoadNewModule(tTargetDirectory, .tParams)
 		} Catch e {
 			Set tSC = $$$ADDSC(tSC,e.AsStatus())
 		}
-		Lock -^IPM.ModuleInstallLock(1)
+		Lock -$$$ModuleInstallLock
 		$$$ThrowOnError(tSC)
 	}
 }
@@ -1774,12 +1774,12 @@ ClassMethod Install(ByRef pCommandInfo) [ Internal ]
 			Set tParams("Install") = 1
 			Set tSC = $$$OK
 			Try {
-				Lock +^IPM.ModuleInstallLock(1):2
+				Lock +$$$ModuleInstallLock:2
 				Set tSC = ##class(%IPM.Utils.Module).LoadModuleReference(tResult.ServerName,tResult.Name,tResult.VersionString,.tParams)
 			} Catch e {
 				Set tSC = $$$ADDSC(tSC,e.AsStatus())
 			}
-			Lock -^IPM.ModuleInstallLock(1)
+			Lock -$$$ModuleInstallLock
 			$$$ThrowOnError(tSC)
 		}
 	} Else {

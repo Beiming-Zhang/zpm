@@ -2,16 +2,16 @@ ROUTINE %IPM.Common [Type=INC]
 
 #define FileTempDirSys	$zu(140,17,##class(%SYS.System).TempDirectory())
 
-#; Helper for XML import of documents
+/// Helper for XML import of documents
 #define ZPMStudioDocumentModule %IPMStudioDocumentModule
 
-#; Local % Variable to track modules already handled for a given end goal
+/// Local % Variable to track modules already handled for a given end goal
 #define ZPMHandledModules %IPMHandledModules
 
-#; Local % Variable to indicate that ^Sources update trigger should not be run for modifications to individual resources
+/// Local % Variable to indicate that ^Sources update trigger should not be run for modifications to individual resources
 #define ZPMDeferModifyResources %IPMDeferModifyResources
 
-#; Default packages for package manager, module lifecycle classes and resource processors
+/// Default packages for package manager, module lifecycle classes and resource processors
 #define ZPMRootPackage "%IPM"
 
 #define DefaultLifecyclePackage $$$ZPMRootPackage_".Lifecycle"
@@ -19,7 +19,7 @@ ROUTINE %IPM.Common [Type=INC]
 #define DefaultProcessorPackage $$$ZPMRootPackage_".ResourceProcessor"
 #define DefaultProcessorPackageDot $$$DefaultProcessorPackage_"."
 
-#; Various globals
+/// Various globals
 #define ZPMConfig ^IPM.Config
 #define ZPMTempLoadGraphRoot ^IRIS.Temp.PackageManagerLoad
 #def1arg ZPMTempLoadGraph(%subscripts) ^IRIS.Temp.PackageManagerLoad(%subscripts)
@@ -30,22 +30,22 @@ ROUTINE %IPM.Common [Type=INC]
 #define ZPMDependencyNsPackages ^IRIS.Temp.ZPMDepNsPackages
 #define ZPMDefaultModifiers ^%IPM.DefaultModifiers
 
-#; Temp global used to store source control output from CSP pages to be shown in Studio/Atelier console
+/// Temp global used to store source control output from CSP pages to be shown in Studio/Atelier console
 #define ZPMExtensionOutput ^IRIS.Temp.ZPMExtensionOutput($Username,$Namespace)
 #define ZPMExtensionOutputClear Kill $$$ZPMExtensionOutput
 #define ZPMExtensionOutputSet(%array) $$$ZPMExtensionOutputClear Merge $$$ZPMExtensionOutput = %array
 #define ZPMExtensionOutputGet(%array) Merge %array = $$$ZPMExtensionOutput
 
-#; Log levels
+/// Log levels
 #define ZPMLogTRACE		0
 #define ZPMLogINFO			1
 #define ZPMLogWARNING		2
 #define ZPMLogERROR		3
 
-#; System method/special variable wrappers
+/// System method/special variable wrappers
 #define InProgrammerMode ##class(%SYSTEM.Process).IsProgrammerMode()
 
-#; CLI tools
+/// CLI tools
 #define HasModifier(%array,%x) ''$Data(%array("modifiers",%x))
 #define GetModifier(%array,%x) $Get(%array("modifiers",%x))
 #define GetModifierDef(%array,%x,%y) $Get(%array("modifiers",%x),%y)
@@ -53,3 +53,6 @@ ROUTINE %IPM.Common [Type=INC]
 
 /// OS corresponding slash
 #define SLASH $Select($$$isWINDOWS: "\", 1: "/")
+
+/// Lock globals
+#define ModuleInstallLock ^IPM.ModuleInstallLock

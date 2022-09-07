@@ -1,19 +1,30 @@
+/// Defines an object that will be used to construct and temporarily store the dependency graph of a specific module
 Class %IPM.Utils.DependencyGraphConfig Extends %RegisteredObject
 {
 
 /// Name of the module to build dependency graph for
 Property Name As %String [ Required ];
 
+/// Dependency graph of the module
+/// Graph("<dependent module name>") = $ListBuild(<depth>,<server name>,<exact version>,<module state>)
+/// Graph("<dependent module name>","<target module> <target module exact version>") = <dependent module semantic version>
 Property Graph [ MultiDimensional ];
 
+/// Depth of which the dependencies of the module are found and written to the graph
 Property Depth As %Integer [ InitialExpression = 1 ];
 
+/// When set to 1, if version of the dependent module is a snapshot version, force it to be loaded
 Property ForceSnapshotReload As %Boolean [ InitialExpression = 0 ];
 
+/// String of lifecycle phases separated by comma, used to check whether a dependency is a scoped one
 Property Phases As %String [ InitialExpression = ""];
 
+/// While Graph provides metadata of the depdencies, SubModules is a multi-dim array used to directly keep track of the depdency module object
+/// SubModules(Depth,"<Dependency Name>") = module object
+/// SubModules(tDepth,"<Dependency Name>","scope") = <scope(s) of the module object>
 Property SubModules [ MultiDimensional ];
 
+/// EXACT(1) run or FUZZY run (2) of the dependency graph construction 
 Property Pass As %Integer [ InitialExpression = 1 ];
 
 /// Modules that the building process of the graph has walked through
@@ -38,7 +49,7 @@ Method %OnNew(pName As %String) As %Status [ Internal, Private ]
 Method SetGraph(ByRef pGraph)
 {
 	Kill ..Graph
-    Merge ..Graph = pGraph
+	Merge ..Graph = pGraph
 }
 
 Method GetGraph(Output pGraph)
@@ -55,20 +66,6 @@ Method SetSubModules(ByRef pSubModules)
 Method GetSubModules(Output pSubModules)
 {
 	Merge pSubModules = ..SubModules
-}
-
-/// Copy non-multidim fields of an config to a branch-new config object
-ClassMethod CreateConfigCopy(pConfigObj As %IPM.Utils.DependencyGraphConfig, pName As %String) As %IPM.Utils.DependencyGraphConfig
-{
-	Set newGraphConfig = ##class(%IPM.Utils.DependencyGraphConfig).%New(pConfigObj)
-	Set newGraphConfig.Depth = pConfigObj.Depth
-	Set newGraphConfig.ForceSnapshotReload = pConfigObj.ForceSnapshotReload
-	Set newGraphConfig.Phases = pConfigObj.Phases
-	Set newGraphConfig.ModulePath = pConfigObj.ModulePath
-	Set newGraphConfig.IgnoreInstalledModules = pConfigObj.IgnoreInstalledModules
-	Set newGraphConfig.KnownDependencies = pConfigObj.KnownDependencies
-	Set newGraphConfig.PermitDowngrade = pConfigObj.PermitDowngrade
-	Quit newGraphConfig
 }
 
 }

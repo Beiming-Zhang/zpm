@@ -58,14 +58,14 @@ ClassMethod LoadDependencies(ByRef pDependencyGraph, ByRef pParams, pWorkQueue A
 				Set pParams("Multicompile","ModuleContext",tModuleName) = $ListBuild("Activate")
 				
 				// Invert dependency graph, subscripts (<module>,<depends on>)
-				Set tInvertedDependencyGraph($$$lcase(tModuleName)) = $List(tData,2,3)
+				Set tInvertedDependencyGraph(tModuleName) = $List(tData,2,3)
 				
 				Set tDependentKey = ""
 				For {
 					Set tDependentKey = $Order(pDependencyGraph(tModuleName,tDependentKey))
 					Quit:tDependentKey=""
 					
-					Set tInvertedDependencyGraph($$$lcase($Piece(tDependentKey," ")),$$$lcase(tModuleName)) = ""
+					Set tInvertedDependencyGraph($Piece(tDependentKey," "),tModuleName) = ""
 				}
 			}
 			
