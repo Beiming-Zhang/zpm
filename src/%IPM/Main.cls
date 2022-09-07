@@ -1693,11 +1693,28 @@ ClassMethod Load(ByRef pCommandInfo) [ Internal ]
 		set tDirectoryName=..LoadFromRepo(tDirectoryName,.tParams)
 	}
 	If ##class(%File).DirectoryExists(tDirectoryName) {
-		$$$ThrowOnError(##class(%IPM.Utils.Module).LoadNewModule(tDirectoryName,.tParams))
+		Set tSC = $$$OK
+		Try {
+			Lock +$$$ModuleInstallLock:2
+			Set tSC = ##class(%IPM.Utils.Module).LoadNewModule(tDirectoryName,.tParams)
+		} Catch e {
+			Set tSC=$$$ADDSC(tSC,e.AsStatus())
+		}
+		Lock -$$$ModuleInstallLock
+		$$$ThrowOnError(tSC)
 	} ElseIf ##class(%File).Exists(tDirectoryName),$$$lcase($PIECE(tDirectoryName, ".", *)) = "tgz" {
 		Set tTargetDirectory = $$$FileTempDirSys
 		Set tSC = ##class(%IPM.General.Archive).Extract(tDirectoryName, tTargetDirectory)
-		$$$ThrowOnError(##class(%IPM.Utils.Module).LoadNewModule(tTargetDirectory, .tParams))
+		$$$ThrowOnError(tSC)
+		Set tSC = $$$OK
+		Try {
+			Lock +$$$ModuleInstallLock:2
+			Set tSC = ##class(%IPM.Utils.Module).LoadNewModule(tTargetDirectory, .tParams)
+		} Catch e {
+			Set tSC = $$$ADDSC(tSC,e.AsStatus())
+		}
+		Lock -$$$ModuleInstallLock
+		$$$ThrowOnError(tSC)
 	}
 }
 
@@ -1755,7 +1772,15 @@ ClassMethod Install(ByRef pCommandInfo) [ Internal ]
 			Do ##class(%IPM.Lifecycle.Base).GetDefaultParameters(.tParams)
 			Merge tParams = pCommandInfo("data")
 			Set tParams("Install") = 1
-			$$$ThrowOnError(##class(%IPM.Utils.Module).LoadModuleReference(tResult.ServerName,tResult.Name,tResult.VersionString,.tParams))
+			Set tSC = $$$OK
+			Try {
+				Lock +$$$ModuleInstallLock:2
+				Set tSC = ##class(%IPM.Utils.Module).LoadModuleReference(tResult.ServerName,tResult.Name,tResult.VersionString,.tParams)
+			} Catch e {
+				Set tSC = $$$ADDSC(tSC,e.AsStatus())
+			}
+			Lock -$$$ModuleInstallLock
+			$$$ThrowOnError(tSC)
 		}
 	} Else {
 		Set tPrefix = ""

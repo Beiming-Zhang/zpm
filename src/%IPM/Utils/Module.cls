@@ -21,8 +21,8 @@ ClassMethod CreateAndGetSSLConfig(ByRef pProperties) As %String
 }
 
 /// Format of <var>pDependencyGraph</var>:
-/// pDependencyGraph("module name") = $ListBuild(<depth>,<server name>,<version>)
-/// pDependencyGraph("module name","<dependent module> <dependent module version>") = <irrelevant>
+/// Graph("dependent module name") = $ListBuild(<depth>,<server name>,<exact version>,<module state>)
+/// Graph("dependent module name","<target module> <target module exact version>") = <irrelevant>
 ClassMethod LoadDependencies(ByRef pDependencyGraph, ByRef pParams, pWorkQueue As %SYSTEM.WorkMgr)
 {
 	// Suspend the error count to avoid spurious messages about errors being detected in load/compile.
@@ -239,17 +239,10 @@ ClassMethod LoadModuleReference(pServerName As %String, pModuleName As %String, 
 		}
 		
 		// Use % variables that intentionally leak in worker processes, to avoid duplicate work when they go out of scope.
-		#dim %installcontext As %IPM.General.InstallContext
 		#dim %manager As %IPM.Repo.Manager
 		If '$$$IsISCWorker {
-			New %installcontext
 			New %manager
 		}
-		Set %installcontext = ##class(%IPM.General.InstallContext).%Get(.tSC)
-		$$$ThrowOnError(tSC)
-		Do %installcontext.SetGraph(.pDependencyGraph)
-		Merge tIndex = pParams("Multicompile","CacheTempIndex")
-		Do %installcontext.SetCacheTempIndex(.tIndex)
 		
 		Set %manager = $Select($IsObject($Get(%manager)):%manager,1:##class(%IPM.Repo.Manager).%Get(.tSC))
 		$$$ThrowOnError(tSC)
@@ -280,7 +273,7 @@ ClassMethod LoadModuleReference(pServerName As %String, pModuleName As %String, 
 		
 		// Ensure requested versions match those required by other modules in the namespace, excluding versions currently being installed
 		// (the requirements of such modules are already known to be satisfied)
-		Set tSC = ..GetRequiredVersionExpression(pModuleName,%installcontext.GetPendingModuleList(),.tExpression,.tSourceList)
+		Set tSC = ..GetRequiredVersionExpression(pModuleName,,.tExpression,.tSourceList)
 		If $$$ISERR(tSC) {
 			Quit
 		}
@@ -1181,22 +1174,18 @@ ClassMethod LoadNewModule(pDirectory As %String, ByRef pParams, pRepository As %
 		}
 		Merge $$$ZPMHandledModules($Namespace) = pParams("Multicompile","ModuleContext")
 
-    $$$ThrowOnError(##class(%IPM.Storage.Module).CheckSystemRequirements(tModuleName))
+    	$$$ThrowOnError(##class(%IPM.Storage.Module).CheckSystemRequirements(tModuleName))
 		
-		#dim tInstallContext As %IPM.General.InstallContext
-		Set tInstallContext = ##class(%IPM.General.InstallContext).%Get(.tSC)
 		$$$ThrowOnError(tSC)
-		If 'tInstallContext.ModuleIsDependency(tModuleName) {
-			If 'pSynchronous {
-				// Regular async multi-threaded loading of dependencies
-				Set tSC = tModule.LoadDependencies("",.pParams)
-				$$$ThrowOnError(tSC)
-			} Else {
-				// Temporary custom loading of dependencies in a synchronous
-				// manner to prevent lock timeouts until lifecycle rework
-				// is complete (HSIEO-4450)
-				Do ..SyncLoadDependencies(tModule, .pParams)
-			}
+		If 'pSynchronous {
+			// Regular async multi-threaded loading of dependencies
+			Set tSC = tModule.LoadDependencies("",.pParams)
+			$$$ThrowOnError(tSC)
+		} Else {
+			// Temporary custom loading of dependencies in a synchronous
+			// manner to prevent lock timeouts until lifecycle rework
+			// is complete (HSIEO-4450)
+			Do ..SyncLoadDependencies(tModule, .pParams)
 		}
 		
 		Set tPath = pDirectory_"preload"

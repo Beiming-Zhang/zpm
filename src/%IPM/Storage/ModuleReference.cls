@@ -29,7 +29,7 @@ Method VersionStringSet(tValue) As %Status
 
 Method NameSet(val As %RawString) As %Status
 {
-	set i%Name = $$$lcase(val)
+	Set i%Name = $$$lcase(val)
 	QUIT $$$OK
 }
 
