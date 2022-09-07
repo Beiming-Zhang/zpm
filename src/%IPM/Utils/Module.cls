@@ -724,7 +724,10 @@ ClassMethod UninstallAll(pForce As %Boolean, ByRef pParams) As %Status
 	Set tSC = $$$OK
 	Try {
 		// Get all dependency graphs for the namespace.
-		Set tSC = ..BuildAllDependencyGraphs(,.tGraphs)
+		Set tSC = ..BuildAllDependencyGraphs(,.tGraphs, .tErrorModules)
+		$$$ThrowOnError(tSC)
+		// UninstallAll should get rid of both modules in question, for instance, those with troubled dependencies, and valid modules
+		Merge tGraphs = tErrorModules
 		$$$ThrowOnError(tSC)
 		
 		// Build arrays mapping dependencies in both directions.
