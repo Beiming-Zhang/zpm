@@ -1,3 +1,5 @@
+Include %IPM.Common
+
 Class %IPM.Repo.Remote.PackageService Extends (%RegisteredObject, %IPM.Repo.IPackageService)
 {
 
@@ -18,6 +20,14 @@ Method GetInfo(url As %String) As %DynamicObject
   }
 
 	$$$ThrowStatus($$$ERROR($$$GeneralError,"Registry server not available."))
+}
+
+Method GetLatestModuleVersion(pModuleName As %String) As %String
+{
+	Set jsonStream = ..GetModuleData(pModuleName)
+	Set versions = {}.%FromJSON(jsonStream)
+	Set latestVersion = versions.versions.%Pop()
+	Return latestVersion
 }
 
 Method ListModules(pSearchCriteria As %IPM.Repo.SearchCriteria) As %ListOfObjects(ELEMENTTYPE="%IPM.Storage.ModuleInfo")
@@ -121,17 +131,43 @@ Method GetModule(pModuleReference As %IPM.Storage.ModuleInfo, Output AsArchive A
 Method GetModuleManifest(pModuleReference As %IPM.Storage.ModuleInfo) As %Stream.Object
 {
   Set tRequest = ..GetHttpRequest()
-  Set tFileBinStream = ""
 
   Set name = pModuleReference.Name
   Set version = pModuleReference.VersionString
 
   Set tSC = tRequest.Get($$$URLENCODE(tRequest.Location_"packages/" _ name _ "/"_version_"/manifest"))
-  If $$$ISOK(tSC), tRequest.HttpResponse.StatusCode=200 {
+  If ($$$ISOK(tSC) && (tRequest.HttpResponse.StatusCode=200)) {
     Return tRequest.HttpResponse.Data
   }
 
-  $$$ThrowStatus($$$ERROR($$$GeneralError,"Download package manifest, something went wrong."))
+  $$$ThrowStatus($$$ERROR($$$GeneralError,"Download package manifest "_name_"-"_version_" failed, something went wrong."))
+}
+
+Method GetModuleInstallerManifest(pModuleReference As %IPM.Storage.ModuleInfo) As %Stream.Object
+{
+  Set tRequest = ..GetHttpRequest()
+
+  Set name = pModuleReference.Name
+  Set version = pModuleReference.VersionString
+
+  Set tSC = tRequest.Get($$$URLENCODE(tRequest.Location_"packages/" _ name _ "/"_version_"/installer"))
+  If ($$$ISOK(tSC) && (tRequest.HttpResponse.StatusCode=200)) {
+    Return tRequest.HttpResponse.Data
+  }
+
+  $$$ThrowStatus($$$ERROR($$$GeneralError,"Download package installer manifest "_name_"-"_version_" failed, something went wrong."))
+}
+
+Method GetModuleData(pName As %String) As %Stream.Object
+{
+  Set tRequest = ..GetHttpRequest()
+
+  Set tSC = tRequest.Get($$$URLENCODE(tRequest.Location_"packages/" _ pName))
+  If ($$$ISOK(tSC) && (tRequest.HttpResponse.StatusCode=200)) {
+    Return tRequest.HttpResponse.Data
+  }
+
+  $$$ThrowStatus($$$ERROR($$$GeneralError,"Getting package "_pName_"'s data failed, something went wrong."))
 }
 
 Method SendAnalyticsToRegistry(action As %String, data As %DynamicObject)
