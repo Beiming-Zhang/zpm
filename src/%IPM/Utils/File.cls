@@ -119,7 +119,8 @@ ClassMethod MakeDirectoryWriteable(pDirectory As %String, Output pCmd, Output pO
 		Kill pOutputLog
 		Kill pErrLog
 		If $$$isWINDOWS {
-			Set pCmd = "attrib -r "_##class(%Library.File).NormalizeDirectory(pDirectory)_"*.* /s"
+			Set pCmd = $ListBuild("attrib","-r"_##class(%Library.File).NormalizeDirectory(pDirectory)_"*.*","/s")
+			Set stdout = ""
 		} ElseIf $$$isUNIX {
 			Set pCmd = "chmod -R 775 "_##class(%Library.File).NormalizeDirectory(pDirectory)
 		}
